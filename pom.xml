@@ -1,0 +1,120 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.example</groupId>
+	<artifactId>ow-profiles</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+
+	<!--Properties define encoding y versiones-->
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
+		<java.version>11</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+
+	<!--La etiqueta profiles abre los perfiles para diferntes entornos
+	y tipos de pruebas-->
+	<profiles>
+
+		<!--El perfil dev tiene la etiqueta activation para que
+		sea la que se activa por defecto-->
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<env>dev</env>
+			</properties>
+		</profile>
+
+
+		<!--Ya sin activation. La etiqueta env debe contener el nombre
+		del archivo de src/main/resources/config/ para despues montar
+		el directorio del que va a beber-->
+		<profile>
+			<id>prod</id>
+			<properties>
+				<env>prod</env>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>test</id>
+			<properties>
+				<env>test</env>
+			</properties>
+		</profile>
+
+	</profiles>
+
+
+	<build>
+		<!--En filters montamos la ruta + nombre de la etiqueta env
+		de cada profile-->
+		<filters>
+			<filter>src/main/resources/config/config.${env}.properties</filter>
+		</filters>
+
+
+		<!--Este es un filtro para que monte el directorio sólo
+		con lo que incluya *.properties en el fichero -->
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+		</resources>
+
+
+		<plugins>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.example.Main</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+
+		</plugins>
+	</build>
+<!--PARA PROBAR EL FUNCIONAMIENTO:
+	-Generamos y ejecutamos un archivo jar con maven + nuestro proyecto Java
+	mediante el comando mvn package (empaquetar) y despues java -jar target/ow-profiles-0.0.1-SNAPSHOT.jar
+	(para ejecutar el jar montado en el empaquetamiento)
+	Como no hemos especificado perfil, saldran los datos del perfil activado por defecto (dev)
+	
+	-Cambiamos el perfil re-empaquetando con el comando mvn -P prod package
+	-Volvemos a ejecutar el archivo jar con el comando anterior, pero como hemos 
+	montado el proyecto con el otro perfil, devolverá los datos del perfil prod
+-->
+</project>
